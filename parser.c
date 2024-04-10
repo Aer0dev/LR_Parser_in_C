@@ -36,7 +36,6 @@ char NT[] = {' ', 'E', 'T', 'F'}; // non-terminals: dummy in 0 index
 Stack s;
 
 
-
 int findTokenIDX(char target){
     for(int i = 0; i<6; i++){
         if(target == token[i])
@@ -54,6 +53,13 @@ int findNonterminalIDX(char target){
     return -1;
 }
 
+void printInput(Stack* s, char input[], int index){
+    printf("\t");
+    for(int i = index; i<strlen(input); i++){
+        printf("%c", input[i]);
+    }
+}
+
 
 void LR_Parser(char input[]){
     int length = strlen(input);
@@ -62,14 +68,23 @@ void LR_Parser(char input[]){
     int phase = 1;  // 연산의 단계 표현해주는 변수
 
     push(&s, state+'0');
-    printf("(%d) initial : %c\n", phase, peek(&s));
+    printf("(%d) initial : ", phase);
+    printStack(&s, phase);
+    printf("\t");
+    printInput(&s, input, index);
+    printf("\n");
 
     phase++;
 
     while(index <= length){
         char token = input[index];
         if(findTokenIDX(token) == -1){
-            printf("Invalid Token (%c) error\n", token);   /// 토큰 예외처리
+            printf("(%d) Invalid Token (%c) error\n", phase, token);   // 토큰 예외처리
+            state = 0;
+            index = 0;
+            phase = 0;
+            clearStack(&s);
+            break;
         }
         int action = action_tbl[state][findTokenIDX(token)];
         
@@ -78,21 +93,28 @@ void LR_Parser(char input[]){
             state = action;     // state변경하고
             if(action == 999){
                 printf("(%d) accept\n", phase);
+                state = 0;
+                index = 0;
+                phase = 0;
+                clearStack(&s);
                 break;
             }
             push(&s, token);
             push(&s, state+'0');
-            printf("(%d) push : %c shift %d\n",phase ,token, state);
+
+            printf("(%d) shift %d: ",phase, state);
+            printStack(&s, phase);
             index++;
+            printInput(&s, input, index);
+            printf("\n");
             phase++;
         }
 
         else if(action < 0){    // REDUCE 연산수행
             int rule_num = -action;
             int rhs_length = rhs_len[rule_num];
-            printf("token = %c\n", input[index]);
 
-            for(int i =0; i<rhs_length *2; i++){
+            for(int i=0; i<rhs_length * 2; i++){
                 char poped_symbol = peek(&s);
                 pop(&s);
             }
@@ -100,28 +122,25 @@ void LR_Parser(char input[]){
             state = goto_tbl[peek(&s) - '0'][findNonterminalIDX(lhs_symbol)];
             
             push(&s, lhs_symbol);
-            
-            printf("goto: %d\n", state);
             push(&s, state+'0');
-            printf("(%d) reduce %d, state %d\n",phase, rule_num, state);
+
+            printf("(%d) reduce %d: ",phase, rule_num);
+            printStack(&s, phase);
+            printInput(&s, input, index);
+            printf("\n");
             phase++;
         }
     
         
         else{
-            
+            printf("(%d) error\n", phase); 
+            state = 0;
+            index = 0;
+            phase = 0;
+            clearStack(&s);
             break;
         }
-        
     }
-    /*
-    if(state == 999){
-        printf("Parsing successful!\n");
-    }
-    else{
-        printf("Parsing error!\n");
-    }
-    */
 }
 
 int main(){
