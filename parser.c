@@ -36,7 +36,7 @@ char NT[] = {' ', 'E', 'T', 'F'}; // non-terminals: dummy in 0 index
 Stack s;
 
 
-int findTokenIDX(char target){
+int findTokenIDX(char target){      // 토큰의 인덱스를 찾는 함수
     for(int i = 0; i<6; i++){
         if(target == token[i])
             return i;
@@ -44,7 +44,7 @@ int findTokenIDX(char target){
     return -1;
 }
 
-int findNonterminalIDX(char target){
+int findNonterminalIDX(char target){    // 논터미널의 인덱스를 찾는 함수
     for(int i=0; i<4; i++){
         if(NT[i] == target){
             return i;
@@ -53,7 +53,7 @@ int findNonterminalIDX(char target){
     return -1;
 }
 
-void printInput(Stack* s, char input[], int index){
+void printInput(Stack* s, char input[], int index){   // 현재처리중인 index부터 끝까지 출력하는 함수
     printf("\t");
     for(int i = index; i<strlen(input); i++){
         printf("%c", input[i]);
@@ -76,7 +76,7 @@ void LR_Parser(char input[]){
 
     phase++;
 
-    while(index <= length){
+    while(index < length){
         char token = input[index];
         if(findTokenIDX(token) == -1){
             printf("(%d) Invalid Token (%c) error\n", phase, token);   // 토큰 예외처리
@@ -103,19 +103,19 @@ void LR_Parser(char input[]){
             push(&s, state+'0');
 
             printf("(%d) shift %d: ",phase, state);
+            index++;        
+            phase++;
             printStack(&s, phase);
-            index++;
             printInput(&s, input, index);
             printf("\n");
-            phase++;
+            
         }
 
         else if(action < 0){    // REDUCE 연산수행
             int rule_num = -action;
             int rhs_length = rhs_len[rule_num];
 
-            for(int i=0; i<rhs_length * 2; i++){
-                char poped_symbol = peek(&s);
+            for(int i=0; i<rhs_length * 2; i++){    // 스택에서 rhs_length*2만큼 pop
                 pop(&s);
             }
             char lhs_symbol = lhs[rule_num];
@@ -125,10 +125,11 @@ void LR_Parser(char input[]){
             push(&s, state+'0');
 
             printf("(%d) reduce %d: ",phase, rule_num);
+            phase++;
             printStack(&s, phase);
             printInput(&s, input, index);
             printf("\n");
-            phase++;
+            
         }
     
         
@@ -145,8 +146,6 @@ void LR_Parser(char input[]){
 
 int main(){
     char input[MAX];
-    int curr = 0;
-
     
     initStack(&s);
     while (1)

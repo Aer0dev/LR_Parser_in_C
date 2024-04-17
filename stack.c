@@ -49,11 +49,11 @@ char accessIDX(Stack *s ,int index){
 void printStack(Stack *s, int index){
   int temp = 0;
   for(int i = 0; i<=index; i++){
-    if(accessIDX(s, i) == ':') {
+    if(accessIDX(s, i) == ':') {  // 10 처리
       temp = 10;
       printf("%d", temp);
     }
-    else if(accessIDX(s, i) == ';') {
+    else if(accessIDX(s, i) == ';') { // 11처리
       temp = 11;
       printf("%d", temp);
     }
@@ -63,6 +63,7 @@ void printStack(Stack *s, int index){
   }
 }
 
+// 스택초기화
 void clearStack(Stack *s){
   while(!isEmpty(s)){
     pop(s);
